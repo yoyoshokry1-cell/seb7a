@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سبحة إلكترونية</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: radial-gradient(circle at center, #1e1e24 0%, #0a0a0c 100%);
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            overflow: hidden;
+            user-select: none;
+            cursor: pointer;
+            box-sizing: border-box;
+            padding: 60px 20px;
+        }
+
+        .text-container {
+            text-align: center;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .phrase {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            transition: color 0.4s ease, transform 0.3s ease;
+        }
+
+        .counter-box {
+            font-size: 4rem;
+            font-weight: 800;
+        }
+        .total {
+            font-size: 2rem;
+            color: #666;
+            font-weight: 400;
+        }
+
+        /* حاوية منطقة السبحة */
+        .tasbeeh-track {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+        }
+
+        /* خيط السبحة المائل في الخلفية */
+        .string {
+            position: absolute;
+            width: 200vw;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%);
+            transform: rotate(-8deg);
+            z-index: 1;
+        }
+
+        /* حاوية الخرز - ضبط البداية من السنتر */
+        .beads-container {
+            display: flex;
+            align-items: center;
+            position: absolute;
+            left: 50%; /* تبدأ من منتصف الشاشة بالظبط */
+            transform-origin: left center;
+            transform: rotate(-8deg) translateX(0px);
+            z-index: 2;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform;
+        }
+
+        /* تصميم الكور (الخرز) */
+        .bead {
+            width: 45px;
+            height: 45px;
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #d1d1d6 50%, #8e8e93 100%);
+            border-radius: 50%;
+            margin: 0 20px; /* مسافة متناسقة بين الكور */
+            box-shadow: -5px 8px 15px rgba(0, 0, 0, 0.5), 
+                        inset -3px -3px 8px rgba(0,0,0,0.4);
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            flex-shrink: 0;
+            opacity: 0.5;
+        }
+
+        /* الكورة النشطة اللي في النص */
+        .bead.active {
+            width: 70px;
+            height: 70px;
+            background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f2f2f7 40%, #a8a8b3 100%);
+            opacity: 1;
+            box-shadow: 0px 0px 25px rgba(255, 255, 255, 0.6), 
+                        -8px 12px 20px rgba(0, 0, 0, 0.7);
+            transform: scale(1.1);
+        }
+
+        .hint {
+            font-size: 0.9rem;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="text-container">
+        <div class="phrase" id="phrase">اضغط للبدء</div>
+        <div class="counter-box">
+            <span id="counter">0</span><span class="total">/100</span>
+        </div>
+    </div>
+
+    <div class="tasbeeh-track">
+        <div class="string"></div>
+        <div class="beads-container" id="beadsContainer">
+            </div>
+    </div>
+
+    <div class="hint">انقر في أي مكان للتسبيح</div>
+
+    <script>
+        const beadsContainer = document.getElementById('beadsContainer');
+        const counterEl = document.getElementById('counter');
+        const phraseEl = document.getElementById('phrase');
+
+        let count = 0;
+        const totalBeads = 105; 
+        const beadSpacing = 85; // عرض الكورة + المارجن (45 + 40)
+
+        // توليد الكور
+        for (let i = 0; i < totalBeads; i++) {
+            const bead = document.createElement('div');
+            bead.classList.add('bead');
+            if (i === 0) bead.classList.add('active');
+            beadsContainer.appendChild(bead);
+        }
+
+        const beads = document.querySelectorAll('.bead');
+
+        document.body.addEventListener('click', () => {
+            if (count < 100) {
+                count++;
+            } else {
+                count = 1;
+            }
+
+            counterEl.textContent = count;
+            updateValues(count);
+
+            // التحريك بالسالب عشان نسحب الحبل ناحية الشمال فتدخل الكورة الجديدة
+            const offset = -count * beadSpacing;
+            beadsContainer.style.transform = `rotate(-8deg) translateX(${offset}px)`;
+
+            // تمييز الكورة اللي عليها الدور في السنتر
+            beads.forEach((bead, index) => {
+                if (index === count) {
+                    bead.classList.add('active');
+                } else {
+                    bead.classList.remove('active');
+                }
+            });
+        });
+
+        function updateValues(currentCount) {
+            if (currentCount >= 1 && currentCount <= 33) {
+                phraseEl.textContent = "سُبْحَانَ الله";
+                phraseEl.style.color = "#4cd137";
+            } else if (currentCount >= 34 && currentCount <= 66) {
+                phraseEl.textContent = "الْحَمْدُ لله";
+                phraseEl.style.color = "#00a8ff";
+            } else if (currentCount >= 67 && currentCount <= 100) {
+                phraseEl.textContent = "اللهُ أَكْبَر";
+                phraseEl.style.color = "#eccc68";
+            }
+            
+            phraseEl.style.transform = "scale(1.05)";
+            setTimeout(() => {
+                phraseEl.style.transform = "scale(1)";
+            }, 100);
+        }
+    </script>
+</body>
+</html>
